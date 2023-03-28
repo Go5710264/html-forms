@@ -1,4 +1,4 @@
-name: projectName
+name: HTML-forms
 
 on: [push, pull_request]
 

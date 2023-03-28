@@ -1,57 +1,64 @@
-export class Tooltip {
-    constructor() {
-        this._tooltips = []; // массив тултипов
-    }
+export default class Tooltip {
+  constructor() {
+    this._tooltips = []; // массив тултипов
+  }
 
-    // на вход передавать сообщение об ошибке и элемент на котором возникла ошибка
-    // далее добавить экземпляр туллтипа в интерфейс
-    // возможность скрыть данный туллтип по id или ключу
-    showTooltip(message, element){
-        const tooltipElement = document.createElement('div');
-        tooltipElement.classList.add('form-error');
-        tooltipElement.textContent = message;
+  showTooltip(message, element) {
+    const dubleError = this._tooltips.find((error) => error.element.textContent === message);
+    // если данная ошибка уже есть, то выйти из функции
+    if (dubleError) return false;
 
-        const id = performance.now();
+    const tooltipElement = document.createElement('div');
+    // инициализация туллтип-элемента
+    tooltipElement.classList.add('form-error');
+    // добавление элементу класса
+    tooltipElement.textContent = message;
+    // добавление текста элементу
 
-        this._tooltips.push({
-            id,
-            element: tooltipElement
-        });
+    const id = performance.now();
 
-        document.body.appendChild(tooltipElement); 
-        // сообщение об ошибке добавляется под форму
+    this._tooltips.push({
+      // добавление созданного туллтипа в общий массив
+      id,
+      element: tooltipElement,
+    });
 
-        console.log(element.getBoundingClientRect());
-        //  координаты элемента
+    document.body.appendChild(tooltipElement);
+    // туллтип добавляется под форму
 
-        const { right, top } = element.getBoundingClientRect();
-        let { left, top: topTooltip } = tooltipElement.getBoundingClientRect();
+    // console.log(element.getBoundingClientRect());
+    //  координаты элемента
 
-        // // использование поля style инлайнового элемента для того чтобы повлиять на инлайновые стили туллтипа
-        // left = right + 5 + 'px';
-        // // левый край туллтипа примыкал к правому краю элемента
-        // topTooltip = top + 'px';
-        // console.log(tooltipElement.getBoundingClientRect())
+    this.getCoords(element);
+    // определение координатов элемента относительно страницы
 
-        // использование поля style инлайнового элемента для того чтобы повлиять на инлайновые стили туллтипа
-        tooltipElement.style.left = right + 5 + 'px';
-        // левый край туллтипа примыкал к правому краю элемента
-        tooltipElement.style.top = top + 'px';
-        // console.log(tooltipElement.style.top)
-        // console.log(element)
+    // использование поля style инлайнового элемента для того чтобы
+    // повлиять на инлайновые стили туллтипа
+    tooltipElement.style.left = `${this.coords.right + 5}px`;
+    // левый край туллтипа примыкал к правому краю элемента
+    // центр туллтипа совпадает с центром поля ввода:
+    tooltipElement.style.top = `${this.coords.top + element.offsetHeight / 2 - tooltipElement.offsetHeight / 2}px`;
+    /*     верхний край на том же расстоянии, что и поле.
+    Верхний край туллтипа сместить на половину ПОЛЯ ВВОДА вниз,
+    а потом поднять туллтип на половину СЕБЯ вверх */
 
-        return id;
-    }
+    return id;
+  }
 
-    removeTooltip(id){
-        const tooltip = this._tooltips.find(t => t.id === id)
+  removeTooltip(id) {
+    const tooltip = this._tooltips.find((t) => t.id === id);
 
-        tooltip.element.remove();
+    tooltip.element.remove();
 
-        this._tooltips = this._tooltips.filter(t => t.id !== id); // чистка массива
-    }
+    this._tooltips = this._tooltips.filter((t) => t.id !== id); // чистка массива
+  }
 
-    // Перемещение туллтипа к тому элементу к которому оно относится:
-    // необоходимы координаты элемента (того который передается в showTooltip)
-    // далее эти координаты используются для абсолютного позиционирования тоолтипа относительно страницы
+  getCoords(elem) { // получение координат поля ввода относительно начала страницы
+    const box = elem.getBoundingClientRect();
+
+    this.coords = {
+      top: box.top + window.pageYOffset,
+      right: box.right + window.pageXOffset,
+    };
+  }
 }
